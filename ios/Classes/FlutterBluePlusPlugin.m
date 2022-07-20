@@ -208,8 +208,10 @@ typedef NS_ENUM(NSUInteger, LogLevel) {
       CBCharacteristic *characteristic = [self locateCharacteristic:[request characteristicUuid] peripheral:peripheral serviceId:[request serviceUuid] secondaryServiceId:[request secondaryServiceUuid]];
       // Get correct write type
       CBCharacteristicWriteType type = ([request writeType] == ProtosWriteCharacteristicRequest_WriteType_WithoutResponse) ? CBCharacteristicWriteWithoutResponse : CBCharacteristicWriteWithResponse;
-      // Write to characteristic
-      [peripheral writeValue:[request value] forCharacteristic:characteristic type:type];
+      // Write to characteristic when supported
+      if(peripheral.canSendWriteWithoutResponse) {
+        [peripheral writeValue:[request value] forCharacteristic:characteristic type:type];
+      }
       result(nil);
     } @catch(FlutterError *e) {
       result(e);
