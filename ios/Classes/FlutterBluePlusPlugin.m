@@ -403,7 +403,7 @@ typedef NS_ENUM(NSUInteger, LogLevel) {
 }
 
 - (void)centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error {
-  NSLog(@"didDisconnectPeripheral");
+  NSLog(@"didDisconnectPeripheral error: %@", [error description]);
   // Unregister self as delegate for peripheral, not working #42
   peripheral.delegate = nil;
 
@@ -412,6 +412,7 @@ typedef NS_ENUM(NSUInteger, LogLevel) {
 }
 
 - (void)centralManager:(CBCentralManager *)central didFailToConnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error {
+    NSLog(@"didFailToConnectPeripheral error: %@", [error description]);
   // TODO:?
 }
 
