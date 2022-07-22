@@ -13,6 +13,12 @@ class FlutterBluePlus {
       StreamController.broadcast(); // ignore: close_sinks
   Stream<MethodCall> get _methodStream => _methodStreamController
       .stream; // Used internally to dispatch methods from platform.
+  /// Fix for issue #608
+  /// Cached broadcast stream for FlutterBlue.state events
+  /// Caching this stream allows for more than one listener to subscribe
+  /// and unsubscribe apart from each other,
+  /// while allowing events to still be sent to others that are subscribed
+  late Stream<BluetoothState>? _stateStream;
 
   /// Singleton boilerplate
   FlutterBluePlus._() {
@@ -83,10 +89,14 @@ class FlutterBluePlus {
         .then((buffer) => protos.BluetoothState.fromBuffer(buffer))
         .then((s) => BluetoothState.values[s.state.value]);
 
-    yield* _stateChannel
+    // @see: https://github.com/boskokg/flutter_blue_plus/issues/13
+    _stateStream ??= _stateChannel
         .receiveBroadcastStream()
         .map((buffer) => protos.BluetoothState.fromBuffer(buffer))
-        .map((s) => BluetoothState.values[s.state.value]);
+        .map((s) => BluetoothState.values[s.state.value])
+        .doOnCancel(() => _stateStream == null);
+    yield* _stateStream!;
+
   }
 
   /// Retrieve a list of connected devices
